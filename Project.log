@@ -1,0 +1,2095 @@
+--------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/helen/Desktop/Project/Project.log
+  log type:  text
+ opened on:  25 Dec 2018, 22:18:16
+
+. 
+. use "/Users/helen/Desktop/Project/cgss2015_14.dta", clear
+
+. 
+. //generate variables
+. *birth year and month
+. gen yob=a301
+
+. replace yob=. if a301<0
+(0 real changes made)
+
+. drop if yob==.
+(0 observations deleted)
+
+. 
+. gen mob=a302
+(1 missing value generated)
+
+. replace mob=. if a302<0
+(725 real changes made, 725 to missing)
+
+. drop if mob==.
+(726 observations deleted)
+
+. 
+. *cutoff:1971,September.
+. gen dist_m=(yob*12+mob)-(1971*12+9)
+
+. 
+. *keep sample from 1962.Jan - 1982.Dec
+. drop if yob<1962
+(4,334 observations deleted)
+
+. drop if yob>1981&mob>8
+(672 observations deleted)
+
+. 
+. //forcing variable and polynomial controls
+. *forcing variable: normalized birth year-month
+. gen X=dist_m
+
+. 
+. *treatment
+. gen T=(dist_m>=0)
+
+. 
+. *polynomials
+. gen TX=T*X
+
+. 
+. gen X2=X*X
+
+. gen TX2=T*X2
+
+. 
+. gen X3=X*X*X
+
+. gen TX3=T*X3
+
+. 
+. save "/Users/helen/Desktop/Project/reg_data", replace
+(note: file /Users/helen/Desktop/Project/reg_data.dta not found)
+file /Users/helen/Desktop/Project/reg_data.dta saved
+
+. 
+. 
+. //summarise
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen trust=a33
+
+. gen PE=a34
+
+. gen fairness=a35
+
+. gen happiness=a36
+
+. tabstat  trust PE fairness happiness if T==0, statistics(mean sd n)  by(T)
+
+Summary statistics: mean, sd, N
+  by categories of: T 
+
+       T |     trust        PE  fairness  happin~s
+---------+----------------------------------------
+       0 |  3.449387  3.070359  3.051748  3.733999
+         |   1.09227  1.140871  1.227171   .862511
+         |      2203      2203      2203      2203
+---------+----------------------------------------
+   Total |  3.449387  3.070359  3.051748  3.733999
+         |   1.09227  1.140871  1.227171   .862511
+         |      2203      2203      2203      2203
+--------------------------------------------------
+
+. tabstat  trust PE fairness happiness if T==1, statistics(mean sd n)  by(T)
+
+Summary statistics: mean, sd, N
+  by categories of: T 
+
+       T |     trust        PE  fairness  happin~s
+---------+----------------------------------------
+       1 |  3.293109  3.053412  3.001649  3.900758
+         |  1.195642  1.274282  1.365205  .8726889
+         |      3033      3033      3033      3033
+---------+----------------------------------------
+   Total |  3.293109  3.053412  3.001649  3.900758
+         |  1.195642  1.274282  1.365205  .8726889
+         |      3033      3033      3033      3033
+--------------------------------------------------
+
+. 
+. gen gender=a2
+
+. replace gender=. if a2<0
+(0 real changes made)
+
+. replace gender=0 if a2==2
+(2,824 real changes made)
+
+. gen income=a8a
+
+. replace income=. if a8a<0
+(281 real changes made, 281 to missing)
+
+. gen edu=a7a
+
+. replace edu=. if a7a<0
+(5 real changes made, 5 to missing)
+
+. gen fatheredu=a89b
+
+. replace fatheredu=. if a89b<0
+(254 real changes made, 254 to missing)
+
+. gen motheredu=a90b
+
+. replace motheredu=. if a90b<0
+(216 real changes made, 216 to missing)
+
+. tabstat  gender income edu fatheredu motheredu if T==0, statistics(mean sd n)  by(T)
+
+Summary statistics: mean, sd, N
+  by categories of: T 
+
+       T |    gender    income       edu  father~u  mother~u
+---------+--------------------------------------------------
+       0 |  .4421244   30971.3  4.472512  2.667798  1.933908
+         |  .4967519  68802.36  2.502597  2.376033  1.737282
+         |      2203      2098      2201      2062      2088
+---------+--------------------------------------------------
+   Total |  .4421244   30971.3  4.472512  2.667798  1.933908
+         |  .4967519  68802.36  2.502597  2.376033  1.737282
+         |      2203      2098      2201      2062      2088
+------------------------------------------------------------
+
+. tabstat  gender income edu fatheredu motheredu if T==1, statistics(mean sd n)  by(T)
+
+Summary statistics: mean, sd, N
+  by categories of: T 
+
+       T |    gender    income       edu  father~u  mother~u
+---------+--------------------------------------------------
+       1 |   .474118  44008.07  6.473597  3.807192  3.117326
+         |   .499412  218959.4   3.34943  2.342281  2.158797
+         |      3033      2857      3030      2920      2932
+---------+--------------------------------------------------
+   Total |   .474118  44008.07  6.473597  3.807192  3.117326
+         |   .499412  218959.4   3.34943  2.342281  2.158797
+         |      3033      2857      3030      2920      2932
+------------------------------------------------------------
+
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. /////////////////////////////
+> ///social attitude effects///
+> /////////////////////////////
+> *1. Trust a33
+. //nonparametric
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen trust=a33
+
+. reg trust T X TX X2 TX2, cluster(X)
+
+Linear regression                               Number of obs     =      5,236
+                                                F(5, 367)         =       4.92
+                                                Prob > F          =     0.0002
+                                                R-squared         =     0.0048
+                                                Root MSE          =     1.1535
+
+                                    (Std. Err. adjusted for 368 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+       trust |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |  -.1361939   .1088343    -1.25   0.212     -.350211    .0778233
+           X |  -.0004391   .0036811    -0.12   0.905    -.0076778    .0067996
+          TX |   .0009388   .0038005     0.25   0.805    -.0065347    .0084122
+          X2 |  -9.22e-07   .0000307    -0.03   0.976    -.0000613    .0000594
+         TX2 |  -1.67e-06   .0000309    -0.05   0.957    -.0000623     .000059
+       _cons |   3.427876   .0917018    37.38   0.000     3.247549    3.608203
+------------------------------------------------------------------------------
+
+. 
+. rdbwselect trust X, bwselect(IK)
+Computing IK bandwidth selector.
+
+Bandwidth estimators for RD local polynomial regression
+
+
+         Cutoff c = 0 | Left of c  Right of c               Number of obs  =       5236
+----------------------+----------------------               NN matches     =          3
+        Number of obs |      2203        3033               Kernel type    = Triangular
+ Order loc. poly. (p) |         1           1
+       Order bias (q) |         2           2
+           Range of X |   115.000     311.000
+
+----------------------------------------------
+   Method |      h           b          rho
+----------+-----------------------------------
+      IK  |  86.82347    83.10022     1.044804
+----------------------------------------------
+
+. gen bw_trust_IK=round(e(h_IK)) 
+
+. 
+. preserve
+
+. *reduce form
+. reg trust T X TX if abs(X)<=bw_trust_IK, cluster(X) //rectangle kernal weight
+
+Linear regression                               Number of obs     =      2,945
+                                                F(3, 174)         =       2.20
+                                                Prob > F          =     0.0901
+                                                R-squared         =     0.0026
+                                                Root MSE          =     1.1703
+
+                                    (Std. Err. adjusted for 175 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+       trust |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |  -.1550762   .0958383    -1.62   0.107    -.3442314    .0340791
+           X |   .0001618   .0012282     0.13   0.895    -.0022623    .0025859
+          TX |   .0005616   .0018552     0.30   0.762       -.0031    .0042232
+       _cons |   3.444427   .0638966    53.91   0.000     3.318314    3.570539
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*) 
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_trust if e(sample) //local linear fit
+(option xb assumed; fitted values)
+(2,291 missing values generated)
+
+. predict sd_trust if e(sample), stdp //standard errors of local linear fit
+(2,291 missing values generated)
+
+. gen ub_trust=hat_trust+1.96*sd_trust //95% confidence interval
+(2,291 missing values generated)
+
+. gen lb_trust=hat_trust-1.96*sd_trust
+(2,291 missing values generated)
+
+. 
+. by X, sort: egen mean_trust=mean(trust) //mean outcome in each bin
+
+. 
+. *Graph
+. keep if abs(X)<=bw_trust_IK+2
+(2,239 observations deleted)
+
+. 
+. twoway  (scatter mean_trust X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O)) /
+> //
+> (rline ub_trust lb_trust X if X<0, sort lpattern(dash)) ///
+> (rline ub_trust lb_trust X if X>=0, sort lpattern(dash)) ///
+> (line hat_trust X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_trust X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("Trust_nonparametric", size(small))
+
+. graph save "/Users/helen/Desktop/Project/trust_nonparametric",replace
+(note: file /Users/helen/Desktop/Project/trust_nonparametric.gph not found)
+(file /Users/helen/Desktop/Project/trust_nonparametric.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/trust_nonparametric", as(tif) replace
+(file /Users/helen/Desktop/Project/trust_nonparametric written in TIFF format)
+
+. 
+. 
+. 
+. //parametric
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen trust=a33
+
+. reg trust T X TX X2 TX2, cluster(X)
+
+Linear regression                               Number of obs     =      5,236
+                                                F(5, 367)         =       4.92
+                                                Prob > F          =     0.0002
+                                                R-squared         =     0.0048
+                                                Root MSE          =     1.1535
+
+                                    (Std. Err. adjusted for 368 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+       trust |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |  -.1361939   .1088343    -1.25   0.212     -.350211    .0778233
+           X |  -.0004391   .0036811    -0.12   0.905    -.0076778    .0067996
+          TX |   .0009388   .0038005     0.25   0.805    -.0065347    .0084122
+          X2 |  -9.22e-07   .0000307    -0.03   0.976    -.0000613    .0000594
+         TX2 |  -1.67e-06   .0000309    -0.05   0.957    -.0000623     .000059
+       _cons |   3.427876   .0917018    37.38   0.000     3.247549    3.608203
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*)
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_trust if e(sample) //second order polynomial fit
+(option xb assumed; fitted values)
+
+. predict sd_trust if e(sample), stdp //standard errors of second order polynomial fit
+
+. gen ub_trust=hat_trust+1.96*sd_trust //95% confidence interval
+
+. gen lb_trust=hat_trust-1.96*sd_trust
+
+. 
+. by X, sort: egen mean_trust=mean(trust) //mean probability of being male in each bin
+
+. 
+. *Graph
+. twoway  (scatter mean_trust X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O)) /
+> //
+> (rline ub_trust lb_trust X if X<0, sort lpattern(dash)) ///
+> (rline ub_trust lb_trust X if X>=0, sort lpattern(dash)) ///
+> (line hat_trust X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_trust X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("Trust_parametric", size(small))
+
+. graph save "/Users/helen/Desktop/Project/trust_parametric",replace
+(note: file /Users/helen/Desktop/Project/trust_parametric.gph not found)
+(file /Users/helen/Desktop/Project/trust_parametric.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/trust_parametric", as(tif) replace
+(file /Users/helen/Desktop/Project/trust_parametric written in TIFF format)
+
+. 
+. 
+. 
+. 
+. 
+. *2. Profit at other people’s expense
+. //nonparametric
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen PE=a34
+
+. reg PE T X TX X2 TX2, cluster(X)
+
+Linear regression                               Number of obs     =      5,236
+                                                F(5, 367)         =       1.43
+                                                Prob > F          =     0.2142
+                                                R-squared         =     0.0014
+                                                Root MSE          =     1.2196
+
+                                    (Std. Err. adjusted for 368 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+          PE |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |   .0539115   .0999406     0.54   0.590    -.1426166    .2504396
+           X |  -.0018988   .0032182    -0.59   0.556    -.0082271    .0044295
+          TX |   .0011996   .0033705     0.36   0.722    -.0054284    .0078276
+          X2 |  -.0000252   .0000256    -0.98   0.326    -.0000756    .0000252
+         TX2 |   .0000258   .0000259     1.00   0.318     -.000025    .0000767
+       _cons |    3.07209   .0817295    37.59   0.000     2.911373    3.232806
+------------------------------------------------------------------------------
+
+. 
+. rdbwselect PE X, bwselect(IK)
+Computing IK bandwidth selector.
+
+Bandwidth estimators for RD local polynomial regression
+
+
+         Cutoff c = 0 | Left of c  Right of c               Number of obs  =       5236
+----------------------+----------------------               NN matches     =          3
+        Number of obs |      2203        3033               Kernel type    = Triangular
+ Order loc. poly. (p) |         1           1
+       Order bias (q) |         2           2
+           Range of X |   115.000     311.000
+
+----------------------------------------------
+   Method |      h           b          rho
+----------+-----------------------------------
+      IK  |  108.5217     73.3405     1.479697
+----------------------------------------------
+
+. gen bw_PE_IK=round(e(h_IK)) 
+
+. 
+. *reduce form
+. reg PE T X TX if abs(X)<=bw_PE_IK, cluster(X) //rectangle kernal weight
+
+Linear regression                               Number of obs     =      3,623
+                                                F(3, 218)         =       1.39
+                                                Prob > F          =     0.2467
+                                                R-squared         =     0.0012
+                                                Root MSE          =     1.2275
+
+                                    (Std. Err. adjusted for 219 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+          PE |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |   .0313173     .08216     0.38   0.703    -.1306124     .193247
+           X |   .0011188    .000854     1.31   0.192    -.0005644    .0028021
+          TX |  -.0027466   .0013612    -2.02   0.045    -.0054295   -.0000637
+       _cons |   3.134204   .0545091    57.50   0.000     3.026772    3.241637
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*) 
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_PE if e(sample) //local linear fit
+(option xb assumed; fitted values)
+(1,613 missing values generated)
+
+. predict sd_PE if e(sample), stdp //standard errors of local linear fit
+(1,613 missing values generated)
+
+. gen ub_PE=hat_PE+1.96*sd_PE //95% confidence interval
+(1,613 missing values generated)
+
+. gen lb_PE=hat_PE-1.96*sd_PE
+(1,613 missing values generated)
+
+. 
+. by X, sort: egen mean_PE=mean(PE) //mean outcome in each bin
+
+. 
+. *Graph
+. keep if abs(X)<=bw_PE_IK+2
+(1,554 observations deleted)
+
+. 
+. twoway  (scatter mean_PE X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O)) ///
+> (rline ub_PE lb_PE X if X<0, sort lpattern(dash)) ///
+> (rline ub_PE lb_PE X if X>=0, sort lpattern(dash)) ///
+> (line hat_PE X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_PE X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("Profit at other people’s expense_nonparametric", size(small))
+
+. graph save "/Users/helen/Desktop/Project/PE_nonparametric",replace
+(note: file /Users/helen/Desktop/Project/PE_nonparametric.gph not found)
+(file /Users/helen/Desktop/Project/PE_nonparametric.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/PE_nonparametric", as(tif) replace
+(file /Users/helen/Desktop/Project/PE_nonparametric written in TIFF format)
+
+. 
+. 
+. 
+. //parametric
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen PE=a34
+
+. reg PE T X TX X2 TX2, cluster(X)
+
+Linear regression                               Number of obs     =      5,236
+                                                F(5, 367)         =       1.43
+                                                Prob > F          =     0.2142
+                                                R-squared         =     0.0014
+                                                Root MSE          =     1.2196
+
+                                    (Std. Err. adjusted for 368 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+          PE |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |   .0539115   .0999406     0.54   0.590    -.1426166    .2504396
+           X |  -.0018988   .0032182    -0.59   0.556    -.0082271    .0044295
+          TX |   .0011996   .0033705     0.36   0.722    -.0054284    .0078276
+          X2 |  -.0000252   .0000256    -0.98   0.326    -.0000756    .0000252
+         TX2 |   .0000258   .0000259     1.00   0.318     -.000025    .0000767
+       _cons |    3.07209   .0817295    37.59   0.000     2.911373    3.232806
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*)
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_PE if e(sample) //second order polynomial fit
+(option xb assumed; fitted values)
+
+. predict sd_PE if e(sample), stdp //standard errors of second order polynomial fit
+
+. gen ub_PE=hat_PE+1.96*sd_PE //95% confidence interval
+
+. gen lb_PE=hat_PE-1.96*sd_PE
+
+. 
+. by X, sort: egen mean_PE=mean(PE) //mean probability of being male in each bin
+
+. 
+. *Graph
+. twoway  (scatter mean_PE X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O)) ///
+> (rline ub_PE lb_PE X if X<0, sort lpattern(dash)) ///
+> (rline ub_PE lb_PE X if X>=0, sort lpattern(dash)) ///
+> (line hat_PE X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_PE X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("Profit at other people’s expense_parametric", size(small))
+
+. graph save "/Users/helen/Desktop/Project/PE_parametric",replace
+(note: file /Users/helen/Desktop/Project/PE_parametric.gph not found)
+(file /Users/helen/Desktop/Project/PE_parametric.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/PE_parametric", as(tif) replace
+(file /Users/helen/Desktop/Project/PE_parametric written in TIFF format)
+
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. *3. Fairness a35
+. //nonparametric
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen fairness=a35
+
+. reg fairness T X TX X2 TX2, cluster(X)
+
+Linear regression                               Number of obs     =      5,236
+                                                F(5, 367)         =       1.19
+                                                Prob > F          =     0.3135
+                                                R-squared         =     0.0011
+                                                Root MSE          =     1.3089
+
+                                    (Std. Err. adjusted for 368 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+    fairness |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |   .0085892   .0997565     0.09   0.931    -.1875768    .2047552
+           X |  -.0030322   .0028676    -1.06   0.291    -.0086712    .0026067
+          TX |   .0026473   .0030759     0.86   0.390    -.0034013    .0086959
+          X2 |  -.0000226   .0000225    -1.01   0.315    -.0000667    .0000216
+         TX2 |   .0000254   .0000228     1.11   0.267    -.0000195    .0000703
+       _cons |   2.975711   .0819458    36.31   0.000     2.814568    3.136853
+------------------------------------------------------------------------------
+
+. 
+. rdbwselect fairness X, bwselect(IK)
+Computing IK bandwidth selector.
+
+Bandwidth estimators for RD local polynomial regression
+
+
+         Cutoff c = 0 | Left of c  Right of c               Number of obs  =       5236
+----------------------+----------------------               NN matches     =          3
+        Number of obs |      2203        3033               Kernel type    = Triangular
+ Order loc. poly. (p) |         1           1
+       Order bias (q) |         2           2
+           Range of X |   115.000     311.000
+
+----------------------------------------------
+   Method |      h           b          rho
+----------+-----------------------------------
+      IK  |  62.68884    102.1065     .6139552
+----------------------------------------------
+
+. gen bw_fairness_IK=round(e(h_IK)) 
+
+. 
+. 
+. *reduce form
+. reg fairness T X TX if abs(X)<=bw_fairness_IK, cluster(X) //rectangle kernal weight
+
+Linear regression                               Number of obs     =      2,159
+                                                F(3, 126)         =       1.69
+                                                Prob > F          =     0.1733
+                                                R-squared         =     0.0015
+                                                Root MSE          =     1.2633
+
+                                    (Std. Err. adjusted for 127 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+    fairness |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |  -.0586835   .1028061    -0.57   0.569    -.2621338    .1447668
+           X |   -.002115    .001787    -1.18   0.239    -.0056514    .0014213
+          TX |    .005348   .0025201     2.12   0.036     .0003608    .0103351
+       _cons |   2.978163    .075643    39.37   0.000     2.828468    3.127859
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*) 
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_fairness if e(sample) //local linear fit
+(option xb assumed; fitted values)
+(3,077 missing values generated)
+
+. predict sd_fairness if e(sample), stdp //standard errors of local linear fit
+(3,077 missing values generated)
+
+. gen ub_fairness=hat_fairness+1.96*sd_fairness //95% confidence interval
+(3,077 missing values generated)
+
+. gen lb_fairness=hat_fairness-1.96*sd_fairness
+(3,077 missing values generated)
+
+. 
+. by X, sort: egen mean_fairness=mean(fairness) //mean outcome in each bin
+
+. 
+. *Graph
+. keep if abs(X)<=bw_fairness_IK+2
+(3,023 observations deleted)
+
+. 
+. twoway  (scatter mean_fairness X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O)
+> ) ///
+> (rline ub_fairness lb_fairness X if X<0, sort lpattern(dash)) ///
+> (rline ub_fairness lb_fairness X if X>=0, sort lpattern(dash)) ///
+> (line hat_fairness X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_fairness X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("Fairness_nonparametric", size(small))
+
+. graph save "/Users/helen/Desktop/Project/fairness_nonparametric",replace
+(note: file /Users/helen/Desktop/Project/fairness_nonparametric.gph not found)
+(file /Users/helen/Desktop/Project/fairness_nonparametric.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/fairness_nonparametric", as(tif) replace
+(file /Users/helen/Desktop/Project/fairness_nonparametric written in TIFF format)
+
+. 
+. 
+. 
+. //parametric
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen fairness=a35
+
+. reg fairness T X TX X2 TX2, cluster(X)
+
+Linear regression                               Number of obs     =      5,236
+                                                F(5, 367)         =       1.19
+                                                Prob > F          =     0.3135
+                                                R-squared         =     0.0011
+                                                Root MSE          =     1.3089
+
+                                    (Std. Err. adjusted for 368 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+    fairness |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |   .0085892   .0997565     0.09   0.931    -.1875768    .2047552
+           X |  -.0030322   .0028676    -1.06   0.291    -.0086712    .0026067
+          TX |   .0026473   .0030759     0.86   0.390    -.0034013    .0086959
+          X2 |  -.0000226   .0000225    -1.01   0.315    -.0000667    .0000216
+         TX2 |   .0000254   .0000228     1.11   0.267    -.0000195    .0000703
+       _cons |   2.975711   .0819458    36.31   0.000     2.814568    3.136853
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*)
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_fairness if e(sample) //second order polynomial fit
+(option xb assumed; fitted values)
+
+. predict sd_fairness if e(sample), stdp //standard errors of second order polynomial fit
+
+. gen ub_fairness=hat_fairness+1.96*sd_fairness //95% confidence interval
+
+. gen lb_fairness=hat_fairness-1.96*sd_fairness
+
+. 
+. by X, sort: egen mean_fairness=mean(fairness) //mean probability of being male in each bin
+
+. 
+. *Graph
+. twoway  (scatter mean_fairness X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O)
+> ) ///
+> (rline ub_fairness lb_fairness X if X<0, sort lpattern(dash)) ///
+> (rline ub_fairness lb_fairness X if X>=0, sort lpattern(dash)) ///
+> (line hat_fairness X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_fairness X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("Fairness_parametric", size(small))
+
+. graph save "/Users/helen/Desktop/Project/fairness_parametric",replace
+(note: file /Users/helen/Desktop/Project/fairness_parametric.gph not found)
+(file /Users/helen/Desktop/Project/fairness_parametric.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/fairness_parametric", as(tif) replace
+(file /Users/helen/Desktop/Project/fairness_parametric written in TIFF format)
+
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. *4. Happiness a36
+. //nonparametric
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen happiness=a36
+
+. reg happiness T X TX X2 TX2, cluster(X)
+
+Linear regression                               Number of obs     =      5,236
+                                                F(5, 367)         =      13.13
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0133
+                                                Root MSE          =     .86681
+
+                                    (Std. Err. adjusted for 368 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+   happiness |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |   .0784257   .0711312     1.10   0.271    -.0614501    .2183016
+           X |  -.0020473   .0022727    -0.90   0.368    -.0065164    .0024219
+          TX |   .0027239   .0024028     1.13   0.258    -.0020011    .0074489
+          X2 |  -.0000258   .0000194    -1.33   0.184    -.0000638    .0000123
+         TX2 |   .0000261   .0000195     1.33   0.183    -.0000123    .0000645
+       _cons |   3.729563   .0545816    68.33   0.000     3.622231    3.836895
+------------------------------------------------------------------------------
+
+. 
+. rdbwselect happiness X, bwselect(IK)
+Computing IK bandwidth selector.
+
+Bandwidth estimators for RD local polynomial regression
+
+
+         Cutoff c = 0 | Left of c  Right of c               Number of obs  =       5236
+----------------------+----------------------               NN matches     =          3
+        Number of obs |      2203        3033               Kernel type    = Triangular
+ Order loc. poly. (p) |         1           1
+       Order bias (q) |         2           2
+           Range of X |   115.000     311.000
+
+----------------------------------------------
+   Method |      h           b          rho
+----------+-----------------------------------
+      IK  |  74.27486    74.57804     .9959348
+----------------------------------------------
+
+. gen bw_happiness_IK=round(e(h_IK)) 
+
+. 
+. 
+. *reduce form
+. reg happiness T X TX if abs(X)<=bw_happiness_IK, cluster(X) //rectangle kernal weight
+
+Linear regression                               Number of obs     =      2,520
+                                                F(3, 148)         =       7.33
+                                                Prob > F          =     0.0001
+                                                R-squared         =     0.0051
+                                                Root MSE          =     .89253
+
+                                    (Std. Err. adjusted for 149 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+   happiness |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |  -.0392508   .0736059    -0.53   0.595    -.1847051    .1062034
+           X |    .000062   .0010779     0.06   0.954    -.0020681    .0021922
+          TX |   .0033671   .0016427     2.05   0.042     .0001209    .0066134
+       _cons |   3.758021   .0436008    86.19   0.000     3.671861    3.844182
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*) 
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_happiness if e(sample) //local linear fit
+(option xb assumed; fitted values)
+(2,716 missing values generated)
+
+. predict sd_happiness if e(sample), stdp //standard errors of local linear fit
+(2,716 missing values generated)
+
+. gen ub_happiness=hat_happiness+1.96*sd_happiness //95% confidence interval
+(2,716 missing values generated)
+
+. gen lb_happiness=hat_happiness-1.96*sd_happiness
+(2,716 missing values generated)
+
+. 
+. by X, sort: egen mean_happiness=mean(happiness) //mean outcome in each bin
+
+. 
+. *Graph
+. keep if abs(X)<=bw_happiness_IK+2
+(2,641 observations deleted)
+
+. 
+. twoway  (scatter mean_happiness X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O
+> )) ///
+> (rline ub_happiness lb_happiness X if X<0, sort lpattern(dash)) ///
+> (rline ub_happiness lb_happiness X if X>=0, sort lpattern(dash)) ///
+> (line hat_happiness X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_happiness X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("Happiness_nonparametric", size(small))
+
+. graph save "/Users/helen/Desktop/Project/happiness_nonparametric",replace
+(note: file /Users/helen/Desktop/Project/happiness_nonparametric.gph not found)
+(file /Users/helen/Desktop/Project/happiness_nonparametric.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/happiness_nonparametric", as(tif) replace
+(file /Users/helen/Desktop/Project/happiness_nonparametric written in TIFF format)
+
+. 
+. 
+. 
+. //parametric
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen happiness=a36
+
+. reg happiness T X TX X2 TX2, cluster(X)
+
+Linear regression                               Number of obs     =      5,236
+                                                F(5, 367)         =      13.13
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0133
+                                                Root MSE          =     .86681
+
+                                    (Std. Err. adjusted for 368 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+   happiness |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |   .0784257   .0711312     1.10   0.271    -.0614501    .2183016
+           X |  -.0020473   .0022727    -0.90   0.368    -.0065164    .0024219
+          TX |   .0027239   .0024028     1.13   0.258    -.0020011    .0074489
+          X2 |  -.0000258   .0000194    -1.33   0.184    -.0000638    .0000123
+         TX2 |   .0000261   .0000195     1.33   0.183    -.0000123    .0000645
+       _cons |   3.729563   .0545816    68.33   0.000     3.622231    3.836895
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*)
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_happiness if e(sample) //second order polynomial fit
+(option xb assumed; fitted values)
+
+. predict sd_happiness if e(sample), stdp //standard errors of second order polynomial fit
+
+. gen ub_happiness=hat_happiness+1.96*sd_happiness //95% confidence interval
+
+. gen lb_happiness=hat_happiness-1.96*sd_happiness
+
+. 
+. by X, sort: egen mean_happiness=mean(happiness) //mean probability of being male in each bin
+
+. 
+. *Graph
+. twoway  (scatter mean_happiness X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O
+> )) ///
+> (rline ub_happiness lb_happiness X if X<0, sort lpattern(dash)) ///
+> (rline ub_happiness lb_happiness X if X>=0, sort lpattern(dash)) ///
+> (line hat_happiness X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_happiness X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("Happiness_parametric", size(small))
+
+. graph save "/Users/helen/Desktop/Project/happiness_parametric",replace
+(note: file /Users/helen/Desktop/Project/happiness_parametric.gph not found)
+(file /Users/helen/Desktop/Project/happiness_parametric.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/happiness_parametric", as(tif) replace
+(file /Users/helen/Desktop/Project/happiness_parametric written in TIFF format)
+
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. /////////////////////////////
+> ///Validity test/////////////
+> /////////////////////////////
+> *1. Density test
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. histogram X, discrete width(1) addplot (pci 0 0 0.05 0) legend(col(2)) xtitle("Birth Cohort")
+(start=-116, width=1)
+
+. graph save "/Users/helen/Desktop/Project/density_histogram",replace
+(note: file /Users/helen/Desktop/Project/density_histogram.gph not found)
+(file /Users/helen/Desktop/Project/density_histogram.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/density_histogram.tif", as(tif) replace
+(file /Users/helen/Desktop/Project/density_histogram.tif written in TIFF format)
+
+. 
+. 
+. 
+. *2. Predetermined characteristics
+. *2.1 gender:male
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen male=a2
+
+. replace male=. if a2<0
+(0 real changes made)
+
+. replace male=0 if a2==2
+(2,824 real changes made)
+
+. 
+. *optimal bandwidth for reduce form regression
+. rdbwselect male X, bwselect(IK)
+Computing IK bandwidth selector.
+
+Bandwidth estimators for RD local polynomial regression
+
+
+         Cutoff c = 0 | Left of c  Right of c               Number of obs  =       5236
+----------------------+----------------------               NN matches     =          3
+        Number of obs |      2203        3033               Kernel type    = Triangular
+ Order loc. poly. (p) |         1           1
+       Order bias (q) |         2           2
+           Range of X |   115.000     311.000
+
+----------------------------------------------
+   Method |      h           b          rho
+----------+-----------------------------------
+      IK  |   88.3327    84.58745     1.044277
+----------------------------------------------
+
+. gen bw_male_IK=round(e(h_IK)) 
+
+. 
+. *reduce form
+. reg male T X TX if abs(X)<=bw_male_IK, cluster(X) 
+
+Linear regression                               Number of obs     =      2,973
+                                                F(3, 176)         =       1.91
+                                                Prob > F          =     0.1291
+                                                R-squared         =     0.0019
+                                                Root MSE          =     .49758
+
+                                    (Std. Err. adjusted for 177 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+        male |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |   .0652449   .0384519     1.70   0.092    -.0106413     .141131
+           X |  -.0005449   .0005243    -1.04   0.300    -.0015796    .0004897
+          TX |   .0005076   .0008295     0.61   0.541    -.0011295    .0021447
+       _cons |   .4109404   .0246118    16.70   0.000     .3623682    .4595126
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*) replace
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_male if e(sample) 
+(option xb assumed; fitted values)
+(2,263 missing values generated)
+
+. predict sd_male if e(sample), stdp 
+(2,263 missing values generated)
+
+. gen ub_male=hat_male+1.96*sd_male //95% confidence interval
+(2,263 missing values generated)
+
+. gen lb_male=hat_male-1.96*sd_male
+(2,263 missing values generated)
+
+. 
+. by X, sort: egen mean_male=mean(male) 
+
+. 
+. *Graph
+. keep if abs(X)<=bw_male_IK+2
+(2,196 observations deleted)
+
+. 
+. twoway  (scatter mean_male X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O)) //
+> /
+> (rline ub_male lb_male X if X<0, sort lpattern(dash)) ///
+> (rline ub_male lb_male X if X>=0, sort lpattern(dash)) ///
+> (line hat_male X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_male X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("male", size(small))
+
+. graph save "/Users/helen/Desktop/Project/male_nonparametric",replace
+(note: file /Users/helen/Desktop/Project/male_nonparametric.gph not found)
+(file /Users/helen/Desktop/Project/male_nonparametric.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/male_nonparametric.tif", as(tif) replace
+(file /Users/helen/Desktop/Project/male_nonparametric.tif written in TIFF format)
+
+. 
+. 
+. 
+. 
+. *2.2 Income
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen lnincome=ln(a8a)
+(1,047 missing values generated)
+
+. replace lnincome=. if a8a<0
+(0 real changes made)
+
+. 
+. rdbwselect lnincome X, bwselect(IK)
+Computing IK bandwidth selector.
+
+Bandwidth estimators for RD local polynomial regression
+
+
+         Cutoff c = 0 | Left of c  Right of c               Number of obs  =       4189
+----------------------+----------------------               NN matches     =          3
+        Number of obs |      1825        2364               Kernel type    = Triangular
+ Order loc. poly. (p) |         1           1
+       Order bias (q) |         2           2
+           Range of X |   115.000     310.000
+
+----------------------------------------------
+   Method |      h           b          rho
+----------+-----------------------------------
+      IK  |  83.26469    81.47181     1.022006
+----------------------------------------------
+
+. gen bw_lnincome_IK=round(e(h_IK)) 
+
+. 
+. 
+. *reduce form
+. reg lnincome T X TX if abs(X)<=bw_lnincome_IK, cluster(X) 
+
+Linear regression                               Number of obs     =      2,346
+                                                F(3, 166)         =      16.48
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0275
+                                                Root MSE          =     1.1139
+
+                                    (Std. Err. adjusted for 167 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+    lnincome |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |  -.0926466   .0995542    -0.93   0.353    -.2892021    .1039089
+           X |   .0039179   .0016158     2.42   0.016     .0007277    .0071081
+          TX |   .0018664   .0022525     0.83   0.409    -.0025807    .0063136
+       _cons |   10.02566   .0711737   140.86   0.000     9.885138    10.16618
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*) 
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_lnincome if e(sample) 
+(option xb assumed; fitted values)
+(2,890 missing values generated)
+
+. predict sd_lnincome if e(sample), stdp 
+(2,890 missing values generated)
+
+. gen ub_lnincome=hat_lnincome+1.96*sd_lnincome //95% confidence interval
+(2,890 missing values generated)
+
+. gen lb_lnincome=hat_lnincome-1.96*sd_lnincome
+(2,890 missing values generated)
+
+. 
+. by X, sort: egen mean_lnincome=mean(lnincome)
+(6 missing values generated)
+
+. 
+. *Graph
+. keep if abs(X)<=bw_lnincome_IK+2
+(2,358 observations deleted)
+
+. 
+. twoway  (scatter mean_lnincome X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O)
+> ) ///
+> (rline ub_lnincome lb_lnincome X if X<0, sort lpattern(dash)) ///
+> (rline ub_lnincome lb_lnincome X if X>=0, sort lpattern(dash)) ///
+> (line hat_lnincome X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_lnincome X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("lnincome", size(small))
+
+. graph save "/Users/helen/Desktop/Project/lnincome_nonparametric",replace
+(note: file /Users/helen/Desktop/Project/lnincome_nonparametric.gph not found)
+(file /Users/helen/Desktop/Project/lnincome_nonparametric.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/lnincome_nonparametric.tif", as(tif) replace
+(file /Users/helen/Desktop/Project/lnincome_nonparametric.tif written in TIFF format)
+
+. 
+. 
+. 
+. *2.3 Father's education a89b
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen fatheredu=a89b
+
+. replace fatheredu=. if a89b<0
+(254 real changes made, 254 to missing)
+
+. 
+. *optimal bandwidth for reduce form regression
+. rdbwselect fatheredu X, bwselect(IK)
+Computing IK bandwidth selector.
+
+Bandwidth estimators for RD local polynomial regression
+
+
+         Cutoff c = 0 | Left of c  Right of c               Number of obs  =       4982
+----------------------+----------------------               NN matches     =          3
+        Number of obs |      2062        2920               Kernel type    = Triangular
+ Order loc. poly. (p) |         1           1
+       Order bias (q) |         2           2
+           Range of X |   115.000     311.000
+
+----------------------------------------------
+   Method |      h           b          rho
+----------+-----------------------------------
+      IK  |  84.87762    79.67667     1.065276
+----------------------------------------------
+
+. gen bw_fatheredu_IK=round(e(h_IK)) 
+
+. 
+. *reduce form
+. reg fatheredu T X TX if abs(X)<=bw_fatheredu_IK, cluster(X) 
+
+Linear regression                               Number of obs     =      2,721
+                                                F(3, 170)         =      20.56
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0197
+                                                Root MSE          =      2.321
+
+                                    (Std. Err. adjusted for 171 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+   fatheredu |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |  -.0457364   .1748318    -0.26   0.794    -.3908573    .2993846
+           X |   .0085449   .0025982     3.29   0.001      .003416    .0136737
+          TX |  -.0029327   .0033872    -0.87   0.388    -.0096192    .0037537
+       _cons |   3.095193   .1424322    21.73   0.000     2.814029    3.376356
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*) replace
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_fatheredu if e(sample) 
+(option xb assumed; fitted values)
+(2,515 missing values generated)
+
+. predict sd_fatheredu if e(sample), stdp 
+(2,515 missing values generated)
+
+. gen ub_fatheredu=hat_fatheredu+1.96*sd_fatheredu //95% confidence interval
+(2,515 missing values generated)
+
+. gen lb_fatheredu=hat_fatheredu-1.96*sd_fatheredu
+(2,515 missing values generated)
+
+. 
+. by X, sort: egen mean_fatheredu=mean(fatheredu) 
+
+. 
+. *Graph
+. keep if abs(X)<=bw_fatheredu_IK+2
+(2,291 observations deleted)
+
+. 
+. twoway  (scatter mean_fatheredu X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O
+> )) ///
+> (rline ub_fatheredu lb_fatheredu X if X<0, sort lpattern(dash)) ///
+> (rline ub_fatheredu lb_fatheredu X if X>=0, sort lpattern(dash)) ///
+> (line hat_fatheredu X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_fatheredu X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("Father's education", size(small))
+
+. graph save "/Users/helen/Desktop/Project/fatheredu",replace
+(note: file /Users/helen/Desktop/Project/fatheredu.gph not found)
+(file /Users/helen/Desktop/Project/fatheredu.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/fatheredu.tif", as(tif) replace
+(file /Users/helen/Desktop/Project/fatheredu.tif written in TIFF format)
+
+. 
+. 
+. 
+. *2.4 Mather's education a90b
+. use "/Users/helen/Desktop/Project/reg_data", clear
+
+. gen motheredu=a90b
+
+. replace motheredu=. if a90b<0
+(216 real changes made, 216 to missing)
+
+. 
+. *optimal bandwidth for reduce form regression
+. rdbwselect motheredu X, bwselect(IK)
+Computing IK bandwidth selector.
+
+Bandwidth estimators for RD local polynomial regression
+
+
+         Cutoff c = 0 | Left of c  Right of c               Number of obs  =       5020
+----------------------+----------------------               NN matches     =          3
+        Number of obs |      2088        2932               Kernel type    = Triangular
+ Order loc. poly. (p) |         1           1
+       Order bias (q) |         2           2
+           Range of X |   115.000     311.000
+
+----------------------------------------------
+   Method |      h           b          rho
+----------+-----------------------------------
+      IK  |  125.7812    57.40593     2.191084
+----------------------------------------------
+
+. gen bw_motheredu_IK=round(e(h_IK)) 
+
+. 
+. *reduce form
+. reg motheredu T X TX if abs(X)<=bw_motheredu_IK, cluster(X) 
+
+Linear regression                               Number of obs     =      3,740
+                                                F(3, 242)         =      70.80
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0457
+                                                Root MSE          =     1.7749
+
+                                    (Std. Err. adjusted for 243 clusters in X)
+------------------------------------------------------------------------------
+             |               Robust
+   motheredu |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           T |  -.1121846   .1095006    -1.02   0.307    -.3278805    .1035112
+           X |   .0040619   .0010859     3.74   0.000     .0019229    .0062008
+          TX |   .0045172   .0015722     2.87   0.004     .0014203    .0076141
+       _cons |   2.171245     .07212    30.11   0.000     2.029182    2.313308
+------------------------------------------------------------------------------
+
+. outreg2 using Table_reduce, excel dec(3) drop(_I*) replace
+Table_reduce.xml
+dir : seeout
+
+. 
+. predict hat_motheredu if e(sample) 
+(option xb assumed; fitted values)
+(1,496 missing values generated)
+
+. predict sd_motheredu if e(sample), stdp 
+(1,496 missing values generated)
+
+. gen ub_motheredu=hat_motheredu+1.96*sd_motheredu //95% confidence interval
+(1,496 missing values generated)
+
+. gen lb_motheredu=hat_motheredu-1.96*sd_motheredu
+(1,496 missing values generated)
+
+. 
+. by X, sort: egen mean_motheredu=mean(motheredu) 
+
+. 
+. *Graph
+. keep if abs(X)<=bw_motheredu_IK+2
+(1,285 observations deleted)
+
+. 
+. twoway  (scatter mean_motheredu X , mcolor(navy navy navy) msize(medium medium medium) msymbol(O
+> )) ///
+> (rline ub_motheredu lb_motheredu X if X<0, sort lpattern(dash)) ///
+> (rline ub_motheredu lb_motheredu X if X>=0, sort lpattern(dash)) ///
+> (line hat_motheredu X if  X<0, sort lcolor(black) lwidth(medthick)) ///
+> (line hat_motheredu X if  X>=0, sort lcolor(black) lwidth(medthick)), ///
+> ytitle(" ") xtitle(distance to the cutoff) xline(0) ///
+> title("Mother's education", size(small))
+
+. graph save "/Users/helen/Desktop/Project/matheredu",replace
+(note: file /Users/helen/Desktop/Project/matheredu.gph not found)
+(file /Users/helen/Desktop/Project/matheredu.gph saved)
+
+. graph export "/Users/helen/Desktop/Project/matheredu.tif", as(tif) replace
+(file /Users/helen/Desktop/Project/matheredu.tif written in TIFF format)
+
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. /////////////////////////////
+> ///Heterogenous effect///////
+> /////////////////////////////
+> use "/Users/helen/Desktop/Project/reg_data", clear
+
+. tab T, gen(Tdummy)
+
+          T |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      2,203       42.07       42.07
+          1 |      3,033       57.93      100.00
+------------+-----------------------------------
+      Total |      5,236      100.00
+
+. gen trust=a33
+
+. gen PE=a34
+
+. gen fairness=a35
+
+. gen happiness=a36
+
+. // Gender
+. gen male=a2
+
+. replace male=. if a2<0
+(0 real changes made)
+
+. replace male=0 if a2==2
+(2,824 real changes made)
+
+. *male
+. xi: ivreg2 trust (a7a=Tdummy2) i.yob i.a261 if male==1, cluster(yob) partial(i.yob i.a261)
+i.yob             _Iyob_1962-1997     (naturally coded; _Iyob_1962 omitted)
+i.a261            _Ia261_1-116        (_Ia261_1 for a261==97 omitted)
+Warning - collinearities detected
+Vars dropped:       _Ia261_4 _Ia261_5 _Ia261_10 _Ia261_11 _Ia261_14 _Ia261_15
+                    _Ia261_16 _Ia261_18 _Ia261_22 _Ia261_23 _Ia261_40 _Ia261_52
+                    _Ia261_55 _Ia261_57 _Ia261_58 _Ia261_61 _Ia261_68 _Ia261_71
+                    _Ia261_75 _Ia261_79 _Ia261_80 _Ia261_86 _Ia261_87 _Ia261_88
+                    _Ia261_92 _Ia261_96 _Ia261_100 _Ia261_104 _Ia261_105
+                    _Ia261_109 _Ia261_111 _Ia261_112 _Ia261_116
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on yob
+
+Number of clusters (yob) =          36                Number of obs =      658
+                                                      F(  1,    35) =    40.40
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  1088.606458                Centered R2   =  -2.2819
+Total (uncentered) SS   =  1088.606458                Uncentered R2 =  -2.2819
+Residual SS             =  3572.720474                Root MSE      =     2.33
+
+------------------------------------------------------------------------------
+             |               Robust
+       trust |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         a7a |     .77641   .1090876     7.12   0.000     .5626023    .9902177
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              1.259
+                                                   Chi-sq(1) P-val =    0.2619
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                3.617
+                         (Kleibergen-Paap rk Wald F statistic):         37.716
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         a7a
+Excluded instruments: Tdummy2
+Partialled-out:       _Iyob_1963 _Iyob_1964 _Iyob_1965 _Iyob_1966 _Iyob_1967
+                      _Iyob_1968 _Iyob_1969 _Iyob_1970 _Iyob_1971 _Iyob_1972
+                      _Iyob_1973 _Iyob_1974 _Iyob_1975 _Iyob_1976 _Iyob_1977
+                      _Iyob_1978 _Iyob_1979 _Iyob_1980 _Iyob_1981 _Iyob_1982
+                      _Iyob_1983 _Iyob_1984 _Iyob_1985 _Iyob_1986 _Iyob_1987
+                      _Iyob_1988 _Iyob_1989 _Iyob_1990 _Iyob_1991 _Iyob_1992
+                      _Iyob_1993 _Iyob_1994 _Iyob_1995 _Iyob_1996 _Iyob_1997
+                      _Ia261_2 _Ia261_3 _Ia261_6 _Ia261_7 _Ia261_8 _Ia261_9
+                      _Ia261_12 _Ia261_13 _Ia261_17 _Ia261_19 _Ia261_20
+                      _Ia261_21 _Ia261_24 _Ia261_25 _Ia261_26 _Ia261_27
+                      _Ia261_28 _Ia261_29 _Ia261_30 _Ia261_31 _Ia261_32
+                      _Ia261_33 _Ia261_34 _Ia261_35 _Ia261_36 _Ia261_37
+                      _Ia261_38 _Ia261_39 _Ia261_41 _Ia261_42 _Ia261_43
+                      _Ia261_44 _Ia261_45 _Ia261_46 _Ia261_47 _Ia261_48
+                      _Ia261_49 _Ia261_50 _Ia261_51 _Ia261_53 _Ia261_54
+                      _Ia261_56 _Ia261_59 _Ia261_60 _Ia261_62 _Ia261_63
+                      _Ia261_64 _Ia261_65 _Ia261_66 _Ia261_67 _Ia261_69
+                      _Ia261_70 _Ia261_72 _Ia261_73 _Ia261_74 _Ia261_76
+                      _Ia261_77 _Ia261_78 _Ia261_81 _Ia261_82 _Ia261_83
+                      _Ia261_84 _Ia261_85 _Ia261_89 _Ia261_90 _Ia261_91
+                      _Ia261_93 _Ia261_94 _Ia261_95 _Ia261_97 _Ia261_98
+                      _Ia261_99 _Ia261_101 _Ia261_102 _Ia261_103 _Ia261_106
+                      _Ia261_107 _Ia261_108 _Ia261_110 _Ia261_113 _Ia261_114
+                      _Ia261_115 _cons
+                      nb: total SS, model F and R2s are after partialling-out;
+                          any small-sample adjustments include partialled-out
+                          variables in regressor count K
+Dropped collinear:    _Ia261_4 _Ia261_5 _Ia261_10 _Ia261_11 _Ia261_14 _Ia261_15
+                      _Ia261_16 _Ia261_18 _Ia261_22 _Ia261_23 _Ia261_40
+                      _Ia261_52 _Ia261_55 _Ia261_57 _Ia261_58 _Ia261_61
+                      _Ia261_68 _Ia261_71 _Ia261_75 _Ia261_79 _Ia261_80
+                      _Ia261_86 _Ia261_87 _Ia261_88 _Ia261_92 _Ia261_96
+                      _Ia261_100 _Ia261_104 _Ia261_105 _Ia261_109 _Ia261_111
+                      _Ia261_112 _Ia261_116
+------------------------------------------------------------------------------
+
+. outreg2 using Table2_2, excel dec(3) drop(_I* o._I*) replace
+Table2_2.xml
+dir : seeout
+
+. 
+. xi: ivreg2 PE (a7a=Tdummy2) i.yob i.a261 if male==1, cluster(yob) partial(i.yob i.a261)
+i.yob             _Iyob_1962-1997     (naturally coded; _Iyob_1962 omitted)
+i.a261            _Ia261_1-116        (_Ia261_1 for a261==97 omitted)
+Warning - collinearities detected
+Vars dropped:       _Ia261_4 _Ia261_5 _Ia261_10 _Ia261_11 _Ia261_14 _Ia261_15
+                    _Ia261_16 _Ia261_18 _Ia261_22 _Ia261_23 _Ia261_40 _Ia261_52
+                    _Ia261_55 _Ia261_57 _Ia261_58 _Ia261_61 _Ia261_68 _Ia261_71
+                    _Ia261_75 _Ia261_79 _Ia261_80 _Ia261_86 _Ia261_87 _Ia261_88
+                    _Ia261_92 _Ia261_96 _Ia261_100 _Ia261_104 _Ia261_105
+                    _Ia261_109 _Ia261_111 _Ia261_112 _Ia261_116
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on yob
+
+Number of clusters (yob) =          36                Number of obs =      658
+                                                      F(  1,    35) =    21.72
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  1315.656068                Centered R2   =  -1.3235
+Total (uncentered) SS   =  1315.656068                Uncentered R2 =  -1.3235
+Residual SS             =  3056.925858                Root MSE      =    2.155
+
+------------------------------------------------------------------------------
+             |               Robust
+          PE |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         a7a |   .5954018   .1141065     5.22   0.000     .3717571    .8190464
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              1.259
+                                                   Chi-sq(1) P-val =    0.2619
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                3.617
+                         (Kleibergen-Paap rk Wald F statistic):         37.716
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         a7a
+Excluded instruments: Tdummy2
+Partialled-out:       _Iyob_1963 _Iyob_1964 _Iyob_1965 _Iyob_1966 _Iyob_1967
+                      _Iyob_1968 _Iyob_1969 _Iyob_1970 _Iyob_1971 _Iyob_1972
+                      _Iyob_1973 _Iyob_1974 _Iyob_1975 _Iyob_1976 _Iyob_1977
+                      _Iyob_1978 _Iyob_1979 _Iyob_1980 _Iyob_1981 _Iyob_1982
+                      _Iyob_1983 _Iyob_1984 _Iyob_1985 _Iyob_1986 _Iyob_1987
+                      _Iyob_1988 _Iyob_1989 _Iyob_1990 _Iyob_1991 _Iyob_1992
+                      _Iyob_1993 _Iyob_1994 _Iyob_1995 _Iyob_1996 _Iyob_1997
+                      _Ia261_2 _Ia261_3 _Ia261_6 _Ia261_7 _Ia261_8 _Ia261_9
+                      _Ia261_12 _Ia261_13 _Ia261_17 _Ia261_19 _Ia261_20
+                      _Ia261_21 _Ia261_24 _Ia261_25 _Ia261_26 _Ia261_27
+                      _Ia261_28 _Ia261_29 _Ia261_30 _Ia261_31 _Ia261_32
+                      _Ia261_33 _Ia261_34 _Ia261_35 _Ia261_36 _Ia261_37
+                      _Ia261_38 _Ia261_39 _Ia261_41 _Ia261_42 _Ia261_43
+                      _Ia261_44 _Ia261_45 _Ia261_46 _Ia261_47 _Ia261_48
+                      _Ia261_49 _Ia261_50 _Ia261_51 _Ia261_53 _Ia261_54
+                      _Ia261_56 _Ia261_59 _Ia261_60 _Ia261_62 _Ia261_63
+                      _Ia261_64 _Ia261_65 _Ia261_66 _Ia261_67 _Ia261_69
+                      _Ia261_70 _Ia261_72 _Ia261_73 _Ia261_74 _Ia261_76
+                      _Ia261_77 _Ia261_78 _Ia261_81 _Ia261_82 _Ia261_83
+                      _Ia261_84 _Ia261_85 _Ia261_89 _Ia261_90 _Ia261_91
+                      _Ia261_93 _Ia261_94 _Ia261_95 _Ia261_97 _Ia261_98
+                      _Ia261_99 _Ia261_101 _Ia261_102 _Ia261_103 _Ia261_106
+                      _Ia261_107 _Ia261_108 _Ia261_110 _Ia261_113 _Ia261_114
+                      _Ia261_115 _cons
+                      nb: total SS, model F and R2s are after partialling-out;
+                          any small-sample adjustments include partialled-out
+                          variables in regressor count K
+Dropped collinear:    _Ia261_4 _Ia261_5 _Ia261_10 _Ia261_11 _Ia261_14 _Ia261_15
+                      _Ia261_16 _Ia261_18 _Ia261_22 _Ia261_23 _Ia261_40
+                      _Ia261_52 _Ia261_55 _Ia261_57 _Ia261_58 _Ia261_61
+                      _Ia261_68 _Ia261_71 _Ia261_75 _Ia261_79 _Ia261_80
+                      _Ia261_86 _Ia261_87 _Ia261_88 _Ia261_92 _Ia261_96
+                      _Ia261_100 _Ia261_104 _Ia261_105 _Ia261_109 _Ia261_111
+                      _Ia261_112 _Ia261_116
+------------------------------------------------------------------------------
+
+. outreg2 using Table2_2, excel dec(3) drop(_I* o._I*) 
+Table2_2.xml
+dir : seeout
+
+. 
+. xi: ivreg2 fairness (a7a=Tdummy2) i.yob i.a261 if male==1, cluster(yob) partial(i.yob i.a261)
+i.yob             _Iyob_1962-1997     (naturally coded; _Iyob_1962 omitted)
+i.a261            _Ia261_1-116        (_Ia261_1 for a261==97 omitted)
+Warning - collinearities detected
+Vars dropped:       _Ia261_4 _Ia261_5 _Ia261_10 _Ia261_11 _Ia261_14 _Ia261_15
+                    _Ia261_16 _Ia261_18 _Ia261_22 _Ia261_23 _Ia261_40 _Ia261_52
+                    _Ia261_55 _Ia261_57 _Ia261_58 _Ia261_61 _Ia261_68 _Ia261_71
+                    _Ia261_75 _Ia261_79 _Ia261_80 _Ia261_86 _Ia261_87 _Ia261_88
+                    _Ia261_92 _Ia261_96 _Ia261_100 _Ia261_104 _Ia261_105
+                    _Ia261_109 _Ia261_111 _Ia261_112 _Ia261_116
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on yob
+
+Number of clusters (yob) =          36                Number of obs =      658
+                                                      F(  1,    35) =     0.76
+                                                      Prob > F      =   0.3903
+Total (centered) SS     =   1148.37079                Centered R2   =   0.0189
+Total (uncentered) SS   =   1148.37079                Uncentered R2 =   0.0189
+Residual SS             =  1126.610402                Root MSE      =    1.309
+
+------------------------------------------------------------------------------
+             |               Robust
+    fairness |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         a7a |   .0643656   .0660877     0.97   0.330    -.0651639    .1938951
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              1.259
+                                                   Chi-sq(1) P-val =    0.2619
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                3.617
+                         (Kleibergen-Paap rk Wald F statistic):         37.716
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         a7a
+Excluded instruments: Tdummy2
+Partialled-out:       _Iyob_1963 _Iyob_1964 _Iyob_1965 _Iyob_1966 _Iyob_1967
+                      _Iyob_1968 _Iyob_1969 _Iyob_1970 _Iyob_1971 _Iyob_1972
+                      _Iyob_1973 _Iyob_1974 _Iyob_1975 _Iyob_1976 _Iyob_1977
+                      _Iyob_1978 _Iyob_1979 _Iyob_1980 _Iyob_1981 _Iyob_1982
+                      _Iyob_1983 _Iyob_1984 _Iyob_1985 _Iyob_1986 _Iyob_1987
+                      _Iyob_1988 _Iyob_1989 _Iyob_1990 _Iyob_1991 _Iyob_1992
+                      _Iyob_1993 _Iyob_1994 _Iyob_1995 _Iyob_1996 _Iyob_1997
+                      _Ia261_2 _Ia261_3 _Ia261_6 _Ia261_7 _Ia261_8 _Ia261_9
+                      _Ia261_12 _Ia261_13 _Ia261_17 _Ia261_19 _Ia261_20
+                      _Ia261_21 _Ia261_24 _Ia261_25 _Ia261_26 _Ia261_27
+                      _Ia261_28 _Ia261_29 _Ia261_30 _Ia261_31 _Ia261_32
+                      _Ia261_33 _Ia261_34 _Ia261_35 _Ia261_36 _Ia261_37
+                      _Ia261_38 _Ia261_39 _Ia261_41 _Ia261_42 _Ia261_43
+                      _Ia261_44 _Ia261_45 _Ia261_46 _Ia261_47 _Ia261_48
+                      _Ia261_49 _Ia261_50 _Ia261_51 _Ia261_53 _Ia261_54
+                      _Ia261_56 _Ia261_59 _Ia261_60 _Ia261_62 _Ia261_63
+                      _Ia261_64 _Ia261_65 _Ia261_66 _Ia261_67 _Ia261_69
+                      _Ia261_70 _Ia261_72 _Ia261_73 _Ia261_74 _Ia261_76
+                      _Ia261_77 _Ia261_78 _Ia261_81 _Ia261_82 _Ia261_83
+                      _Ia261_84 _Ia261_85 _Ia261_89 _Ia261_90 _Ia261_91
+                      _Ia261_93 _Ia261_94 _Ia261_95 _Ia261_97 _Ia261_98
+                      _Ia261_99 _Ia261_101 _Ia261_102 _Ia261_103 _Ia261_106
+                      _Ia261_107 _Ia261_108 _Ia261_110 _Ia261_113 _Ia261_114
+                      _Ia261_115 _cons
+                      nb: total SS, model F and R2s are after partialling-out;
+                          any small-sample adjustments include partialled-out
+                          variables in regressor count K
+Dropped collinear:    _Ia261_4 _Ia261_5 _Ia261_10 _Ia261_11 _Ia261_14 _Ia261_15
+                      _Ia261_16 _Ia261_18 _Ia261_22 _Ia261_23 _Ia261_40
+                      _Ia261_52 _Ia261_55 _Ia261_57 _Ia261_58 _Ia261_61
+                      _Ia261_68 _Ia261_71 _Ia261_75 _Ia261_79 _Ia261_80
+                      _Ia261_86 _Ia261_87 _Ia261_88 _Ia261_92 _Ia261_96
+                      _Ia261_100 _Ia261_104 _Ia261_105 _Ia261_109 _Ia261_111
+                      _Ia261_112 _Ia261_116
+------------------------------------------------------------------------------
+
+. outreg2 using Table2_2, excel dec(3) drop(_I* o._I*) 
+Table2_2.xml
+dir : seeout
+
+. 
+. xi: ivreg2 happiness (a7a=Tdummy2) i.yob i.a261 if male==1, cluster(yob) partial(i.yob i.a261)
+i.yob             _Iyob_1962-1997     (naturally coded; _Iyob_1962 omitted)
+i.a261            _Ia261_1-116        (_Ia261_1 for a261==97 omitted)
+Warning - collinearities detected
+Vars dropped:       _Ia261_4 _Ia261_5 _Ia261_10 _Ia261_11 _Ia261_14 _Ia261_15
+                    _Ia261_16 _Ia261_18 _Ia261_22 _Ia261_23 _Ia261_40 _Ia261_52
+                    _Ia261_55 _Ia261_57 _Ia261_58 _Ia261_61 _Ia261_68 _Ia261_71
+                    _Ia261_75 _Ia261_79 _Ia261_80 _Ia261_86 _Ia261_87 _Ia261_88
+                    _Ia261_92 _Ia261_96 _Ia261_100 _Ia261_104 _Ia261_105
+                    _Ia261_109 _Ia261_111 _Ia261_112 _Ia261_116
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on yob
+
+Number of clusters (yob) =          36                Number of obs =      658
+                                                      F(  1,    35) =    34.57
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  535.7746733                Centered R2   =  -1.6469
+Total (uncentered) SS   =  535.7746733                Uncentered R2 =  -1.6469
+Residual SS             =  1418.129504                Root MSE      =    1.468
+
+------------------------------------------------------------------------------
+             |               Robust
+   happiness |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         a7a |   .4863897   .0738769     6.58   0.000     .3415937    .6311858
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              1.259
+                                                   Chi-sq(1) P-val =    0.2619
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                3.617
+                         (Kleibergen-Paap rk Wald F statistic):         37.716
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         a7a
+Excluded instruments: Tdummy2
+Partialled-out:       _Iyob_1963 _Iyob_1964 _Iyob_1965 _Iyob_1966 _Iyob_1967
+                      _Iyob_1968 _Iyob_1969 _Iyob_1970 _Iyob_1971 _Iyob_1972
+                      _Iyob_1973 _Iyob_1974 _Iyob_1975 _Iyob_1976 _Iyob_1977
+                      _Iyob_1978 _Iyob_1979 _Iyob_1980 _Iyob_1981 _Iyob_1982
+                      _Iyob_1983 _Iyob_1984 _Iyob_1985 _Iyob_1986 _Iyob_1987
+                      _Iyob_1988 _Iyob_1989 _Iyob_1990 _Iyob_1991 _Iyob_1992
+                      _Iyob_1993 _Iyob_1994 _Iyob_1995 _Iyob_1996 _Iyob_1997
+                      _Ia261_2 _Ia261_3 _Ia261_6 _Ia261_7 _Ia261_8 _Ia261_9
+                      _Ia261_12 _Ia261_13 _Ia261_17 _Ia261_19 _Ia261_20
+                      _Ia261_21 _Ia261_24 _Ia261_25 _Ia261_26 _Ia261_27
+                      _Ia261_28 _Ia261_29 _Ia261_30 _Ia261_31 _Ia261_32
+                      _Ia261_33 _Ia261_34 _Ia261_35 _Ia261_36 _Ia261_37
+                      _Ia261_38 _Ia261_39 _Ia261_41 _Ia261_42 _Ia261_43
+                      _Ia261_44 _Ia261_45 _Ia261_46 _Ia261_47 _Ia261_48
+                      _Ia261_49 _Ia261_50 _Ia261_51 _Ia261_53 _Ia261_54
+                      _Ia261_56 _Ia261_59 _Ia261_60 _Ia261_62 _Ia261_63
+                      _Ia261_64 _Ia261_65 _Ia261_66 _Ia261_67 _Ia261_69
+                      _Ia261_70 _Ia261_72 _Ia261_73 _Ia261_74 _Ia261_76
+                      _Ia261_77 _Ia261_78 _Ia261_81 _Ia261_82 _Ia261_83
+                      _Ia261_84 _Ia261_85 _Ia261_89 _Ia261_90 _Ia261_91
+                      _Ia261_93 _Ia261_94 _Ia261_95 _Ia261_97 _Ia261_98
+                      _Ia261_99 _Ia261_101 _Ia261_102 _Ia261_103 _Ia261_106
+                      _Ia261_107 _Ia261_108 _Ia261_110 _Ia261_113 _Ia261_114
+                      _Ia261_115 _cons
+                      nb: total SS, model F and R2s are after partialling-out;
+                          any small-sample adjustments include partialled-out
+                          variables in regressor count K
+Dropped collinear:    _Ia261_4 _Ia261_5 _Ia261_10 _Ia261_11 _Ia261_14 _Ia261_15
+                      _Ia261_16 _Ia261_18 _Ia261_22 _Ia261_23 _Ia261_40
+                      _Ia261_52 _Ia261_55 _Ia261_57 _Ia261_58 _Ia261_61
+                      _Ia261_68 _Ia261_71 _Ia261_75 _Ia261_79 _Ia261_80
+                      _Ia261_86 _Ia261_87 _Ia261_88 _Ia261_92 _Ia261_96
+                      _Ia261_100 _Ia261_104 _Ia261_105 _Ia261_109 _Ia261_111
+                      _Ia261_112 _Ia261_116
+------------------------------------------------------------------------------
+
+. outreg2 using Table2_2, excel dec(3) drop(_I* o._I*) 
+Table2_2.xml
+dir : seeout
+
+. 
+. *female
+. xi: ivreg2 trust (a7a=Tdummy2) i.yob i.a261 if male==0, cluster(yob) partial(i.yob i.a261)
+i.yob             _Iyob_1962-1997     (naturally coded; _Iyob_1962 omitted)
+i.a261            _Ia261_1-116        (_Ia261_1 for a261==97 omitted)
+Warning - collinearities detected
+Vars dropped:       _Ia261_8 _Ia261_9 _Ia261_26 _Ia261_29 _Ia261_34 _Ia261_35
+                    _Ia261_36 _Ia261_42 _Ia261_47 _Ia261_53 _Ia261_54 _Ia261_59
+                    _Ia261_60 _Ia261_74 _Ia261_83 _Ia261_91 _Ia261_97 _Ia261_103
+                    _Ia261_110 _Ia261_115
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on yob
+
+Number of clusters (yob) =          36                Number of obs =     1091
+                                                      F(  1,    35) =     1.72
+                                                      Prob > F      =   0.1983
+Total (centered) SS     =   1672.42691                Centered R2   =  -0.2677
+Total (uncentered) SS   =   1672.42691                Uncentered R2 =  -0.2677
+Residual SS             =  2120.184384                Root MSE      =    1.394
+
+------------------------------------------------------------------------------
+             |               Robust
+       trust |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         a7a |   .2705661    .190853     1.42   0.156     -.103499    .6446311
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              0.904
+                                                   Chi-sq(1) P-val =    0.3417
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                0.309
+                         (Kleibergen-Paap rk Wald F statistic):          7.743
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         a7a
+Excluded instruments: Tdummy2
+Partialled-out:       _Iyob_1963 _Iyob_1964 _Iyob_1965 _Iyob_1966 _Iyob_1967
+                      _Iyob_1968 _Iyob_1969 _Iyob_1970 _Iyob_1971 _Iyob_1972
+                      _Iyob_1973 _Iyob_1974 _Iyob_1975 _Iyob_1976 _Iyob_1977
+                      _Iyob_1978 _Iyob_1979 _Iyob_1980 _Iyob_1981 _Iyob_1982
+                      _Iyob_1983 _Iyob_1984 _Iyob_1985 _Iyob_1986 _Iyob_1987
+                      _Iyob_1988 _Iyob_1989 _Iyob_1990 _Iyob_1991 _Iyob_1992
+                      _Iyob_1993 _Iyob_1994 _Iyob_1995 _Iyob_1996 _Iyob_1997
+                      _Ia261_2 _Ia261_3 _Ia261_4 _Ia261_5 _Ia261_6 _Ia261_7
+                      _Ia261_10 _Ia261_11 _Ia261_12 _Ia261_13 _Ia261_14
+                      _Ia261_15 _Ia261_16 _Ia261_17 _Ia261_18 _Ia261_19
+                      _Ia261_20 _Ia261_21 _Ia261_22 _Ia261_23 _Ia261_24
+                      _Ia261_25 _Ia261_27 _Ia261_28 _Ia261_30 _Ia261_31
+                      _Ia261_32 _Ia261_33 _Ia261_37 _Ia261_38 _Ia261_39
+                      _Ia261_40 _Ia261_41 _Ia261_43 _Ia261_44 _Ia261_45
+                      _Ia261_46 _Ia261_48 _Ia261_49 _Ia261_50 _Ia261_51
+                      _Ia261_52 _Ia261_55 _Ia261_56 _Ia261_57 _Ia261_58
+                      _Ia261_61 _Ia261_62 _Ia261_63 _Ia261_64 _Ia261_65
+                      _Ia261_66 _Ia261_67 _Ia261_68 _Ia261_69 _Ia261_70
+                      _Ia261_71 _Ia261_72 _Ia261_73 _Ia261_75 _Ia261_76
+                      _Ia261_77 _Ia261_78 _Ia261_79 _Ia261_80 _Ia261_81
+                      _Ia261_82 _Ia261_84 _Ia261_85 _Ia261_86 _Ia261_87
+                      _Ia261_88 _Ia261_89 _Ia261_90 _Ia261_92 _Ia261_93
+                      _Ia261_94 _Ia261_95 _Ia261_96 _Ia261_98 _Ia261_99
+                      _Ia261_100 _Ia261_101 _Ia261_102 _Ia261_104 _Ia261_105
+                      _Ia261_106 _Ia261_107 _Ia261_108 _Ia261_109 _Ia261_111
+                      _Ia261_112 _Ia261_113 _Ia261_114 _Ia261_116 _cons
+                      nb: total SS, model F and R2s are after partialling-out;
+                          any small-sample adjustments include partialled-out
+                          variables in regressor count K
+Dropped collinear:    _Ia261_8 _Ia261_9 _Ia261_26 _Ia261_29 _Ia261_34 _Ia261_35
+                      _Ia261_36 _Ia261_42 _Ia261_47 _Ia261_53 _Ia261_54
+                      _Ia261_59 _Ia261_60 _Ia261_74 _Ia261_83 _Ia261_91
+                      _Ia261_97 _Ia261_103 _Ia261_110 _Ia261_115
+------------------------------------------------------------------------------
+
+. outreg2 using Table2_2, excel dec(3) drop(_I* o._I*) 
+Table2_2.xml
+dir : seeout
+
+. 
+. xi: ivreg2 PE (a7a=Tdummy2) i.yob i.a261 if male==0, cluster(yob) partial(i.yob i.a261)
+i.yob             _Iyob_1962-1997     (naturally coded; _Iyob_1962 omitted)
+i.a261            _Ia261_1-116        (_Ia261_1 for a261==97 omitted)
+Warning - collinearities detected
+Vars dropped:       _Ia261_8 _Ia261_9 _Ia261_26 _Ia261_29 _Ia261_34 _Ia261_35
+                    _Ia261_36 _Ia261_42 _Ia261_47 _Ia261_53 _Ia261_54 _Ia261_59
+                    _Ia261_60 _Ia261_74 _Ia261_83 _Ia261_91 _Ia261_97 _Ia261_103
+                    _Ia261_110 _Ia261_115
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on yob
+
+Number of clusters (yob) =          36                Number of obs =     1091
+                                                      F(  1,    35) =     6.81
+                                                      Prob > F      =   0.0133
+Total (centered) SS     =  1320.947987                Centered R2   =  -4.6647
+Total (uncentered) SS   =  1320.947987                Uncentered R2 =  -4.6647
+Residual SS             =   7482.77088                Root MSE      =    2.619
+
+------------------------------------------------------------------------------
+             |               Robust
+          PE |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         a7a |   .8467952   .3001574     2.82   0.005     .2584975    1.435093
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              0.904
+                                                   Chi-sq(1) P-val =    0.3417
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                0.309
+                         (Kleibergen-Paap rk Wald F statistic):          7.743
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         a7a
+Excluded instruments: Tdummy2
+Partialled-out:       _Iyob_1963 _Iyob_1964 _Iyob_1965 _Iyob_1966 _Iyob_1967
+                      _Iyob_1968 _Iyob_1969 _Iyob_1970 _Iyob_1971 _Iyob_1972
+                      _Iyob_1973 _Iyob_1974 _Iyob_1975 _Iyob_1976 _Iyob_1977
+                      _Iyob_1978 _Iyob_1979 _Iyob_1980 _Iyob_1981 _Iyob_1982
+                      _Iyob_1983 _Iyob_1984 _Iyob_1985 _Iyob_1986 _Iyob_1987
+                      _Iyob_1988 _Iyob_1989 _Iyob_1990 _Iyob_1991 _Iyob_1992
+                      _Iyob_1993 _Iyob_1994 _Iyob_1995 _Iyob_1996 _Iyob_1997
+                      _Ia261_2 _Ia261_3 _Ia261_4 _Ia261_5 _Ia261_6 _Ia261_7
+                      _Ia261_10 _Ia261_11 _Ia261_12 _Ia261_13 _Ia261_14
+                      _Ia261_15 _Ia261_16 _Ia261_17 _Ia261_18 _Ia261_19
+                      _Ia261_20 _Ia261_21 _Ia261_22 _Ia261_23 _Ia261_24
+                      _Ia261_25 _Ia261_27 _Ia261_28 _Ia261_30 _Ia261_31
+                      _Ia261_32 _Ia261_33 _Ia261_37 _Ia261_38 _Ia261_39
+                      _Ia261_40 _Ia261_41 _Ia261_43 _Ia261_44 _Ia261_45
+                      _Ia261_46 _Ia261_48 _Ia261_49 _Ia261_50 _Ia261_51
+                      _Ia261_52 _Ia261_55 _Ia261_56 _Ia261_57 _Ia261_58
+                      _Ia261_61 _Ia261_62 _Ia261_63 _Ia261_64 _Ia261_65
+                      _Ia261_66 _Ia261_67 _Ia261_68 _Ia261_69 _Ia261_70
+                      _Ia261_71 _Ia261_72 _Ia261_73 _Ia261_75 _Ia261_76
+                      _Ia261_77 _Ia261_78 _Ia261_79 _Ia261_80 _Ia261_81
+                      _Ia261_82 _Ia261_84 _Ia261_85 _Ia261_86 _Ia261_87
+                      _Ia261_88 _Ia261_89 _Ia261_90 _Ia261_92 _Ia261_93
+                      _Ia261_94 _Ia261_95 _Ia261_96 _Ia261_98 _Ia261_99
+                      _Ia261_100 _Ia261_101 _Ia261_102 _Ia261_104 _Ia261_105
+                      _Ia261_106 _Ia261_107 _Ia261_108 _Ia261_109 _Ia261_111
+                      _Ia261_112 _Ia261_113 _Ia261_114 _Ia261_116 _cons
+                      nb: total SS, model F and R2s are after partialling-out;
+                          any small-sample adjustments include partialled-out
+                          variables in regressor count K
+Dropped collinear:    _Ia261_8 _Ia261_9 _Ia261_26 _Ia261_29 _Ia261_34 _Ia261_35
+                      _Ia261_36 _Ia261_42 _Ia261_47 _Ia261_53 _Ia261_54
+                      _Ia261_59 _Ia261_60 _Ia261_74 _Ia261_83 _Ia261_91
+                      _Ia261_97 _Ia261_103 _Ia261_110 _Ia261_115
+------------------------------------------------------------------------------
+
+. outreg2 using Table2_2, excel dec(3) drop(_I* o._I*) 
+Table2_2.xml
+dir : seeout
+
+. 
+. xi: ivreg2 fairness (a7a=Tdummy2) i.yob i.a261 if male==0, cluster(yob) partial(i.yob i.a261)
+i.yob             _Iyob_1962-1997     (naturally coded; _Iyob_1962 omitted)
+i.a261            _Ia261_1-116        (_Ia261_1 for a261==97 omitted)
+Warning - collinearities detected
+Vars dropped:       _Ia261_8 _Ia261_9 _Ia261_26 _Ia261_29 _Ia261_34 _Ia261_35
+                    _Ia261_36 _Ia261_42 _Ia261_47 _Ia261_53 _Ia261_54 _Ia261_59
+                    _Ia261_60 _Ia261_74 _Ia261_83 _Ia261_91 _Ia261_97 _Ia261_103
+                    _Ia261_110 _Ia261_115
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on yob
+
+Number of clusters (yob) =          36                Number of obs =     1091
+                                                      F(  1,    35) =     1.18
+                                                      Prob > F      =   0.2851
+Total (centered) SS     =  1968.292191                Centered R2   =  -0.3347
+Total (uncentered) SS   =  1968.292191                Uncentered R2 =  -0.3347
+Residual SS             =  2627.067258                Root MSE      =    1.552
+
+------------------------------------------------------------------------------
+             |               Robust
+    fairness |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         a7a |   .2975939   .2535257     1.17   0.240    -.1993073    .7944952
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              0.904
+                                                   Chi-sq(1) P-val =    0.3417
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                0.309
+                         (Kleibergen-Paap rk Wald F statistic):          7.743
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         a7a
+Excluded instruments: Tdummy2
+Partialled-out:       _Iyob_1963 _Iyob_1964 _Iyob_1965 _Iyob_1966 _Iyob_1967
+                      _Iyob_1968 _Iyob_1969 _Iyob_1970 _Iyob_1971 _Iyob_1972
+                      _Iyob_1973 _Iyob_1974 _Iyob_1975 _Iyob_1976 _Iyob_1977
+                      _Iyob_1978 _Iyob_1979 _Iyob_1980 _Iyob_1981 _Iyob_1982
+                      _Iyob_1983 _Iyob_1984 _Iyob_1985 _Iyob_1986 _Iyob_1987
+                      _Iyob_1988 _Iyob_1989 _Iyob_1990 _Iyob_1991 _Iyob_1992
+                      _Iyob_1993 _Iyob_1994 _Iyob_1995 _Iyob_1996 _Iyob_1997
+                      _Ia261_2 _Ia261_3 _Ia261_4 _Ia261_5 _Ia261_6 _Ia261_7
+                      _Ia261_10 _Ia261_11 _Ia261_12 _Ia261_13 _Ia261_14
+                      _Ia261_15 _Ia261_16 _Ia261_17 _Ia261_18 _Ia261_19
+                      _Ia261_20 _Ia261_21 _Ia261_22 _Ia261_23 _Ia261_24
+                      _Ia261_25 _Ia261_27 _Ia261_28 _Ia261_30 _Ia261_31
+                      _Ia261_32 _Ia261_33 _Ia261_37 _Ia261_38 _Ia261_39
+                      _Ia261_40 _Ia261_41 _Ia261_43 _Ia261_44 _Ia261_45
+                      _Ia261_46 _Ia261_48 _Ia261_49 _Ia261_50 _Ia261_51
+                      _Ia261_52 _Ia261_55 _Ia261_56 _Ia261_57 _Ia261_58
+                      _Ia261_61 _Ia261_62 _Ia261_63 _Ia261_64 _Ia261_65
+                      _Ia261_66 _Ia261_67 _Ia261_68 _Ia261_69 _Ia261_70
+                      _Ia261_71 _Ia261_72 _Ia261_73 _Ia261_75 _Ia261_76
+                      _Ia261_77 _Ia261_78 _Ia261_79 _Ia261_80 _Ia261_81
+                      _Ia261_82 _Ia261_84 _Ia261_85 _Ia261_86 _Ia261_87
+                      _Ia261_88 _Ia261_89 _Ia261_90 _Ia261_92 _Ia261_93
+                      _Ia261_94 _Ia261_95 _Ia261_96 _Ia261_98 _Ia261_99
+                      _Ia261_100 _Ia261_101 _Ia261_102 _Ia261_104 _Ia261_105
+                      _Ia261_106 _Ia261_107 _Ia261_108 _Ia261_109 _Ia261_111
+                      _Ia261_112 _Ia261_113 _Ia261_114 _Ia261_116 _cons
+                      nb: total SS, model F and R2s are after partialling-out;
+                          any small-sample adjustments include partialled-out
+                          variables in regressor count K
+Dropped collinear:    _Ia261_8 _Ia261_9 _Ia261_26 _Ia261_29 _Ia261_34 _Ia261_35
+                      _Ia261_36 _Ia261_42 _Ia261_47 _Ia261_53 _Ia261_54
+                      _Ia261_59 _Ia261_60 _Ia261_74 _Ia261_83 _Ia261_91
+                      _Ia261_97 _Ia261_103 _Ia261_110 _Ia261_115
+------------------------------------------------------------------------------
+
+. outreg2 using Table2_2, excel dec(3) drop(_I* o._I*) 
+Table2_2.xml
+dir : seeout
+
+. 
+. xi: ivreg2 happiness (a7a=Tdummy2) i.yob i.a261 if male==0, cluster(yob) partial(i.yob i.a261)
+i.yob             _Iyob_1962-1997     (naturally coded; _Iyob_1962 omitted)
+i.a261            _Ia261_1-116        (_Ia261_1 for a261==97 omitted)
+Warning - collinearities detected
+Vars dropped:       _Ia261_8 _Ia261_9 _Ia261_26 _Ia261_29 _Ia261_34 _Ia261_35
+                    _Ia261_36 _Ia261_42 _Ia261_47 _Ia261_53 _Ia261_54 _Ia261_59
+                    _Ia261_60 _Ia261_74 _Ia261_83 _Ia261_91 _Ia261_97 _Ia261_103
+                    _Ia261_110 _Ia261_115
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on yob
+
+Number of clusters (yob) =          36                Number of obs =     1091
+                                                      F(  1,    35) =     6.11
+                                                      Prob > F      =   0.0185
+Total (centered) SS     =  635.7387035                Centered R2   = -10.4194
+Total (uncentered) SS   =  635.7387035                Uncentered R2 = -10.4194
+Residual SS             =  7259.738045                Root MSE      =     2.58
+
+------------------------------------------------------------------------------
+             |               Robust
+   happiness |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         a7a |   .9033336   .3380339     2.67   0.008     .2407994    1.565868
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              0.904
+                                                   Chi-sq(1) P-val =    0.3417
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                0.309
+                         (Kleibergen-Paap rk Wald F statistic):          7.743
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         a7a
+Excluded instruments: Tdummy2
+Partialled-out:       _Iyob_1963 _Iyob_1964 _Iyob_1965 _Iyob_1966 _Iyob_1967
+                      _Iyob_1968 _Iyob_1969 _Iyob_1970 _Iyob_1971 _Iyob_1972
+                      _Iyob_1973 _Iyob_1974 _Iyob_1975 _Iyob_1976 _Iyob_1977
+                      _Iyob_1978 _Iyob_1979 _Iyob_1980 _Iyob_1981 _Iyob_1982
+                      _Iyob_1983 _Iyob_1984 _Iyob_1985 _Iyob_1986 _Iyob_1987
+                      _Iyob_1988 _Iyob_1989 _Iyob_1990 _Iyob_1991 _Iyob_1992
+                      _Iyob_1993 _Iyob_1994 _Iyob_1995 _Iyob_1996 _Iyob_1997
+                      _Ia261_2 _Ia261_3 _Ia261_4 _Ia261_5 _Ia261_6 _Ia261_7
+                      _Ia261_10 _Ia261_11 _Ia261_12 _Ia261_13 _Ia261_14
+                      _Ia261_15 _Ia261_16 _Ia261_17 _Ia261_18 _Ia261_19
+                      _Ia261_20 _Ia261_21 _Ia261_22 _Ia261_23 _Ia261_24
+                      _Ia261_25 _Ia261_27 _Ia261_28 _Ia261_30 _Ia261_31
+                      _Ia261_32 _Ia261_33 _Ia261_37 _Ia261_38 _Ia261_39
+                      _Ia261_40 _Ia261_41 _Ia261_43 _Ia261_44 _Ia261_45
+                      _Ia261_46 _Ia261_48 _Ia261_49 _Ia261_50 _Ia261_51
+                      _Ia261_52 _Ia261_55 _Ia261_56 _Ia261_57 _Ia261_58
+                      _Ia261_61 _Ia261_62 _Ia261_63 _Ia261_64 _Ia261_65
+                      _Ia261_66 _Ia261_67 _Ia261_68 _Ia261_69 _Ia261_70
+                      _Ia261_71 _Ia261_72 _Ia261_73 _Ia261_75 _Ia261_76
+                      _Ia261_77 _Ia261_78 _Ia261_79 _Ia261_80 _Ia261_81
+                      _Ia261_82 _Ia261_84 _Ia261_85 _Ia261_86 _Ia261_87
+                      _Ia261_88 _Ia261_89 _Ia261_90 _Ia261_92 _Ia261_93
+                      _Ia261_94 _Ia261_95 _Ia261_96 _Ia261_98 _Ia261_99
+                      _Ia261_100 _Ia261_101 _Ia261_102 _Ia261_104 _Ia261_105
+                      _Ia261_106 _Ia261_107 _Ia261_108 _Ia261_109 _Ia261_111
+                      _Ia261_112 _Ia261_113 _Ia261_114 _Ia261_116 _cons
+                      nb: total SS, model F and R2s are after partialling-out;
+                          any small-sample adjustments include partialled-out
+                          variables in regressor count K
+Dropped collinear:    _Ia261_8 _Ia261_9 _Ia261_26 _Ia261_29 _Ia261_34 _Ia261_35
+                      _Ia261_36 _Ia261_42 _Ia261_47 _Ia261_53 _Ia261_54
+                      _Ia261_59 _Ia261_60 _Ia261_74 _Ia261_83 _Ia261_91
+                      _Ia261_97 _Ia261_103 _Ia261_110 _Ia261_115
+------------------------------------------------------------------------------
+
+. outreg2 using Table2_2, excel dec(3) drop(_I* o._I*) 
+Table2_2.xml
+dir : seeout
+
+. 
+. 
+. cap log close 
